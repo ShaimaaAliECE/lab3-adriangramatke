@@ -8,17 +8,18 @@ app.use(cors())
 app.use(express.json());
 app.use(express.static(path.join(__dirname, './build')));
 
+//Fucntion to create the connection to database
 function createDbConnection(){
     return mysql.createConnection({
         user: 'root',
         host: 'localhost',
-        password: ' ',
+        password: '',
         database: 'appointmentSystem',
-        port: 80,
+        port: 80
     });
 }
 
-//post req to create an appointment req name, email and the date of appoint
+//Posts to get name, email and appointment date
 app.post('/create', (req, res) =>{
         const name = req.body.name;
         const email = req.body.email;
@@ -28,7 +29,7 @@ app.post('/create', (req, res) =>{
         db.connect((err)=> {
             if(!err)
             {
-                console.log("Connected");
+                console.log("Connected to database");
             }
             else
             {
@@ -41,13 +42,13 @@ app.post('/create', (req, res) =>{
              if(err){
                  console.log(err)
              } else{
-                 res.send("Values inserted")
+                 res.send("Information inserted")
              }
              db.end();
             }
         );   
 });
-
+//Returns all appointments
 app.get('/appointments', (req, res) =>{
 
     const db = createDbConnection();
@@ -62,8 +63,8 @@ app.get('/appointments', (req, res) =>{
     });
     db.end();
 });
-
-app.put('/update', (req, res) => { // put req allowing admin to update oppointment dates.
+//Allows updates for appointments
+app.put('/update', (req, res) => { 
     const id = req.body.id;
     const appointmentDate= req.body.appointmentDate;
     const db = createDbConnection();
@@ -83,7 +84,7 @@ app.put('/update', (req, res) => { // put req allowing admin to update oppointme
     }
     );
 });
-
+//Allows appointment deletion
 app.delete('/delete/:id', (req, res) => {
     const id=  req.params.id
     const db = createDbConnection();
@@ -98,34 +99,29 @@ app.delete('/delete/:id', (req, res) => {
         db.end();
     });
 });
-
-app.listen(80,()=>{
-    console.log("Server running on port 80");
+//Starts server and connects database
+app.listen(80,() => {
+    console.log("Running on port 80");
     const db = createDbConnection();
 
-    db.connect((err)=> {
-        if(!err)
-        {
+    db.connect((err) => {
+        if (!err) {
             console.log("Connected to server");
-        }
-        else
-        {
+        } else {
             console.log(err);
         }
     });
-
-    db.query('DROP TABLE IF EXISTS appointments', function (err, result) {
+    db.query("DROP TABLE IF EXISTS appointments", function (err, result) {
         if (err) throw err;
         console.log(result);
     });
-    db.query('CREATE TABLE appointments (id int, name varchar(255), email varchar(255), appointmentDate DATE)')
-    ,(err, result) =>{
-        if(err){
+    db.query('CREATE TABLE appointments (id int, name varchar(255), email varchar(255), appointmentDate DATE);'
+    ,(err, result) => {
+        if (err){
             console.log(err);
-        }else{
+        } else {
             console.log("Table created successfully");
         }
         db.end()
-    };  
-
+    });  
 });
